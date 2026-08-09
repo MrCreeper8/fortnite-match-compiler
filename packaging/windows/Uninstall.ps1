@@ -62,13 +62,18 @@ try {
         throw 'The resolved installation directory did not pass the safety check.'
     }
 
-    $desktopShortcut = Join-Path $desktopDirectory 'Compile Latest Fortnite Match.lnk'
+    $desktopShortcuts = @(
+        (Join-Path $desktopDirectory 'Fortnite Match Compiler.lnk'),
+        (Join-Path $desktopDirectory 'Compile Latest Fortnite Match.lnk')
+    )
     $startMenuDirectory = Join-Path $programsDirectory 'Fortnite Match Compiler'
     $settingsDirectory = [IO.Path]::GetFullPath(
         (Join-Path $localApplicationData 'FortniteMatchCompiler'))
 
-    if (Test-Path -LiteralPath $desktopShortcut) {
-        Remove-Item -LiteralPath $desktopShortcut -Force
+    foreach ($desktopShortcut in $desktopShortcuts) {
+        if (Test-Path -LiteralPath $desktopShortcut) {
+            Remove-Item -LiteralPath $desktopShortcut -Force
+        }
     }
     if (Test-Path -LiteralPath $startMenuDirectory) {
         Remove-Item -LiteralPath $startMenuDirectory -Recurse -Force

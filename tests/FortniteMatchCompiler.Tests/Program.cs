@@ -33,6 +33,9 @@ public static class Program
             Run("event-anchored excerpt timing", TestClipWindows);
             Run("duration validation tolerance", TestDurationTolerance);
             await RunAsync("single-instance command pipe", TestSingleInstancePipeAsync);
+            await RunAsync(
+                "single-instance shutdown without UI context pump",
+                TestSingleInstanceShutdownWithoutContextPumpAsync);
             if (args.Contains("--ffmpeg-integration", StringComparer.OrdinalIgnoreCase))
             {
                 await RunAsync("two-segment FFmpeg compilation", () =>
@@ -390,6 +393,46 @@ public static class Program
         }
     }
 
+    private static async Task TestSingleInstanceShutdownWithoutContextPumpAsync()
+    {
+        using var cancellation = new CancellationTokenSource();
+        var pipeName = $"FortniteMatchCompiler.Tests-{Guid.NewGuid():N}";
+        var nonPumpingContext = new NonPumpingSynchronizationContext();
+        var callerContext = SynchronizationContext.Current;
+        Task listener;
+
+        try
+        {
+            SynchronizationContext.SetSynchronizationContext(nonPumpingContext);
+            listener = SingleInstanceCoordinator.ListenAsync(
+                _ => { },
+                cancellation.Token,
+                pipeName);
+        }
+        finally
+        {
+            SynchronizationContext.SetSynchronizationContext(callerContext);
+        }
+
+        cancellation.Cancel();
+        var completed = await Task.WhenAny(
+            listener,
+            Task.Delay(TimeSpan.FromSeconds(3)));
+
+        Expect(ReferenceEquals(completed, listener),
+            "Cancelling the command listener must not depend on pumping the UI synchronization context.");
+        try
+        {
+            await listener;
+        }
+        catch (OperationCanceledException) when (cancellation.IsCancellationRequested)
+        {
+        }
+
+        Equal(0, nonPumpingContext.PostCount,
+            "The command listener must not post its shutdown continuation to the caller's synchronization context.");
+    }
+
     private static async Task TestFfmpegIntegrationAsync(SyntheticSandbox sandbox)
     {
         var tools = FfmpegLocator.Locate();
@@ -594,6 +637,18 @@ public static class Program
             var path = Path.Combine(folder, fileName);
             File.WriteAllBytes(path, new byte[] { 0x46, 0x4D, 0x43 });
             return path;
+        }
+    }
+
+    private sealed class NonPumpingSynchronizationContext : SynchronizationContext
+    {
+        private int _postCount;
+
+        public int PostCount => Volatile.Read(ref _postCount);
+
+        public override void Post(SendOrPostCallback callback, object? state)
+        {
+            Interlocked.Increment(ref _postCount);
         }
     }
 }

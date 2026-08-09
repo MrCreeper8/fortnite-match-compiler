@@ -47,8 +47,10 @@ The packaged release includes the .NET runtime, but it does not redistribute FFm
 2. Extract the ZIP to a folder you control.
 3. Make sure FFmpeg and ffprobe are available using one of the methods above.
 4. Open **Install.cmd**.
-5. Use **Fortnite Match Compiler** from the Start Menu, or use the **Compile Latest Fortnite Match** shortcut on the Desktop.
+5. Open **Fortnite Match Compiler** from the Desktop or Start Menu. Opening the normal app only scans for the latest match; compilation starts when you press **Compile latest match**.
 6. Check the detected match, adjust the settings if needed, and select **Compile latest match**.
+
+For an intentional one-action compile, use **Compile Latest Fortnite Match** from the Start Menu. Its explicit name distinguishes it from the normal app shortcut.
 
 The installer works per user, does not require administrator access, and installs the app under `%LOCALAPPDATA%\Programs\Fortnite Match Compiler`.
 

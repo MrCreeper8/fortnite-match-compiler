@@ -55,9 +55,22 @@ public static class SingleInstanceCoordinator
                     maxNumberOfServerInstances: 1,
                     PipeTransmissionMode.Byte,
                     PipeOptions.Asynchronous | PipeOptions.CurrentUserOnly);
-                await server.WaitForConnectionAsync(cancellationToken);
+                using var cancellationRegistration = cancellationToken.Register(
+                    static state =>
+                    {
+                        try
+                        {
+                            ((NamedPipeServerStream)state!).Dispose();
+                        }
+                        catch
+                        {
+                            // Shutdown must not be held up by a pipe that is already closing.
+                        }
+                    },
+                    server);
+                await server.WaitForConnectionAsync(cancellationToken).ConfigureAwait(false);
                 using var reader = new StreamReader(server, Encoding.UTF8);
-                var command = await reader.ReadLineAsync(cancellationToken);
+                var command = await reader.ReadLineAsync(cancellationToken).ConfigureAwait(false);
                 if (!string.IsNullOrWhiteSpace(command))
                 {
                     commandHandler(command);
@@ -67,10 +80,18 @@ public static class SingleInstanceCoordinator
             {
                 return;
             }
+            catch (ObjectDisposedException) when (cancellationToken.IsCancellationRequested)
+            {
+                return;
+            }
+            catch (IOException) when (cancellationToken.IsCancellationRequested)
+            {
+                return;
+            }
             catch (Exception exception)
             {
                 AppLogger.Write($"Single-instance command listener error: {exception.Message}");
-                await Task.Delay(250, cancellationToken);
+                await Task.Delay(250, cancellationToken).ConfigureAwait(false);
             }
         }
     }

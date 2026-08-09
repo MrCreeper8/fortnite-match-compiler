@@ -51,7 +51,14 @@ internal static class Program
         listenerCancellation.Cancel();
         try
         {
-            listener.GetAwaiter().GetResult();
+            if (listener.Wait(TimeSpan.FromSeconds(1)))
+            {
+                listener.GetAwaiter().GetResult();
+            }
+            else
+            {
+                AppLogger.Write("Single-instance command listener did not stop before shutdown; exiting anyway.");
+            }
         }
         catch (OperationCanceledException)
         {

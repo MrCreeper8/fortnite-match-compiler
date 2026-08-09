@@ -76,6 +76,8 @@ try {
     $destinationExecutable = Join-Path $installDirectory 'Fortnite Match Compiler.exe'
     $destinationUninstaller = Join-Path $installDirectory 'Uninstall.ps1'
     $startMenuDirectory = Join-Path $programsDirectory 'Fortnite Match Compiler'
+    $legacyDesktopShortcut = Join-Path $desktopDirectory 'Compile Latest Fortnite Match.lnk'
+    $desktopShortcut = Join-Path $desktopDirectory 'Fortnite Match Compiler.lnk'
 
     New-Item -ItemType Directory -Path $installDirectory -Force | Out-Null
     Copy-Item -LiteralPath $sourceExecutable -Destination $destinationExecutable -Force
@@ -92,12 +94,18 @@ try {
         }
     }
 
+    # Releases before 1.0.1 put the one-click compile action on the desktop.
+    # Remove that shortcut during upgrades so the app never compiles merely
+    # because the user opened its primary desktop icon.
+    if (Test-Path -LiteralPath $legacyDesktopShortcut -PathType Leaf) {
+        Remove-Item -LiteralPath $legacyDesktopShortcut -Force
+    }
+
     New-AppShortcut `
-        -ShortcutPath (Join-Path $desktopDirectory 'Compile Latest Fortnite Match.lnk') `
+        -ShortcutPath $desktopShortcut `
         -TargetPath $destinationExecutable `
-        -Arguments '--compile-latest' `
         -WorkingDirectory $installDirectory `
-        -Description 'Compile the latest completed Fortnite match' `
+        -Description 'Open Fortnite Match Compiler' `
         -IconPath $destinationExecutable
 
     New-AppShortcut `
@@ -105,6 +113,14 @@ try {
         -TargetPath $destinationExecutable `
         -WorkingDirectory $installDirectory `
         -Description 'Open Fortnite Match Compiler' `
+        -IconPath $destinationExecutable
+
+    New-AppShortcut `
+        -ShortcutPath (Join-Path $startMenuDirectory 'Compile Latest Fortnite Match.lnk') `
+        -TargetPath $destinationExecutable `
+        -Arguments '--compile-latest' `
+        -WorkingDirectory $installDirectory `
+        -Description 'Compile the latest completed Fortnite match' `
         -IconPath $destinationExecutable
 
     $powerShellExecutable = Join-Path $PSHOME 'powershell.exe'
@@ -119,7 +135,7 @@ try {
     Write-Host ''
     Write-Host 'Fortnite Match Compiler is installed.' -ForegroundColor Green
     Write-Host "Application: $destinationExecutable"
-    Write-Host "Desktop shortcut: $(Join-Path $desktopDirectory 'Compile Latest Fortnite Match.lnk')"
+    Write-Host "Desktop shortcut: $desktopShortcut"
     Write-Host "Start Menu folder: $startMenuDirectory"
     exit 0
 }
