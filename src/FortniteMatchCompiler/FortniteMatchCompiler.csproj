@@ -11,7 +11,7 @@
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <ApplicationIcon>Assets\app-icon.ico</ApplicationIcon>
     <ApplicationHighDpiMode>PerMonitorV2</ApplicationHighDpiMode>
-    <Version>1.0.1</Version>
+    <Version>1.0.2</Version>
     <AssemblyTitle>Fortnite Match Compiler</AssemblyTitle>
     <Product>Fortnite Match Compiler</Product>
     <Description>Turn NVIDIA Fortnite highlights into compact match compilations.</Description>

@@ -32,6 +32,8 @@ public static class Program
             Run("legacy timing migration", () => TestLegacyTimingMigration(sandbox));
             Run("event-anchored excerpt timing", TestClipWindows);
             Run("duration validation tolerance", TestDurationTolerance);
+            Run("output folder resolution and shell launch", () =>
+                TestOutputFolderLaunch(sandbox));
             await RunAsync("single-instance command pipe", TestSingleInstancePipeAsync);
             await RunAsync(
                 "single-instance shutdown without UI context pump",
@@ -533,6 +535,45 @@ public static class Program
         Expect(HighlightScanner.TryParse(new FileInfo(path), out var item),
             $"Synthetic highlight filename did not parse: {Path.GetFileName(path)}");
         return item;
+    }
+
+    private static void TestOutputFolderLaunch(SyntheticSandbox sandbox)
+    {
+        var configuredFolder = sandbox.CreateDirectory("configured-output");
+        var completedFolder = sandbox.CreateDirectory("completed-output");
+        var completedVideo = Path.Combine(completedFolder, "compiled match.mp4");
+        File.WriteAllBytes(completedVideo, new byte[] { 0x46, 0x4D, 0x43 });
+
+        Equal(
+            completedFolder,
+            OutputFolderLauncher.ResolveFolder(completedVideo, configuredFolder),
+            "An existing completed video should resolve to its actual parent folder.");
+
+        var missingVideo = Path.Combine(completedFolder, "missing.mp4");
+        Equal(
+            configuredFolder,
+            OutputFolderLauncher.ResolveFolder(missingVideo, configuredFolder),
+            "A missing completed video should fall back to the configured output folder.");
+        Equal<string?>(
+            null,
+            OutputFolderLauncher.ResolveFolder(missingVideo, "  "),
+            "An empty configured output folder should not produce a launch target.");
+
+        var startInfo = OutputFolderLauncher.CreateStartInfo(completedFolder);
+        Equal(
+            completedFolder,
+            startInfo.FileName,
+            "The shell launch target should be the folder path itself.");
+        Expect(startInfo.UseShellExecute,
+            "Opening the output folder should use the Windows shell.");
+        Equal(
+            "open",
+            startInfo.Verb,
+            "Opening the output folder should request the shell's open action.");
+        Equal(
+            0,
+            startInfo.ArgumentList.Count,
+            "Opening the output folder should not depend on Explorer command-line arguments.");
     }
 
     private static void Run(string name, Action test)

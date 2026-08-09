@@ -664,24 +664,16 @@ public sealed class MainForm : Form
     {
         try
         {
-            var folder = _outputFolder.Text.Trim();
-            if (string.IsNullOrWhiteSpace(folder))
+            var folder = OutputFolderLauncher.ResolveFolder(
+                _lastOutputPath,
+                _outputFolder.Text);
+            if (folder is null)
             {
                 return;
             }
 
             Directory.CreateDirectory(folder);
-            var startInfo = new ProcessStartInfo("explorer.exe") { UseShellExecute = true };
-            if (_lastOutputPath is not null && File.Exists(_lastOutputPath))
-            {
-                startInfo.ArgumentList.Add($"/select,{_lastOutputPath}");
-            }
-            else
-            {
-                startInfo.ArgumentList.Add(folder);
-            }
-
-            Process.Start(startInfo);
+            Process.Start(OutputFolderLauncher.CreateStartInfo(folder));
         }
         catch (Exception exception)
         {
