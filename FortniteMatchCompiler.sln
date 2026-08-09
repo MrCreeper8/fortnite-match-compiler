@@ -1,0 +1,45 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31903.59
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{05A86876-00D5-4B89-845D-196E4D6903C6}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FortniteMatchCompiler", "src\FortniteMatchCompiler\FortniteMatchCompiler.csproj", "{6E5C2054-2926-4524-A5A0-2352AD58A434}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{C7EABBF8-AF3C-4F35-B037-CA6A6641A125}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FortniteMatchCompiler.Tests", "tests\FortniteMatchCompiler.Tests\FortniteMatchCompiler.Tests.csproj", "{FD78F714-0192-4726-A698-D2EE2A544EC4}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tools", "tools", "{41DB0B63-BDF6-48C9-990E-5F0F1EDA10A0}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FortniteMatchCompiler.UiSnapshot", "tools\FortniteMatchCompiler.UiSnapshot\FortniteMatchCompiler.UiSnapshot.csproj", "{9BA332BD-210A-413F-85F7-CD9344603B67}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{6E5C2054-2926-4524-A5A0-2352AD58A434}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6E5C2054-2926-4524-A5A0-2352AD58A434}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6E5C2054-2926-4524-A5A0-2352AD58A434}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6E5C2054-2926-4524-A5A0-2352AD58A434}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FD78F714-0192-4726-A698-D2EE2A544EC4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FD78F714-0192-4726-A698-D2EE2A544EC4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FD78F714-0192-4726-A698-D2EE2A544EC4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FD78F714-0192-4726-A698-D2EE2A544EC4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9BA332BD-210A-413F-85F7-CD9344603B67}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9BA332BD-210A-413F-85F7-CD9344603B67}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9BA332BD-210A-413F-85F7-CD9344603B67}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9BA332BD-210A-413F-85F7-CD9344603B67}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{6E5C2054-2926-4524-A5A0-2352AD58A434} = {05A86876-00D5-4B89-845D-196E4D6903C6}
+		{FD78F714-0192-4726-A698-D2EE2A544EC4} = {C7EABBF8-AF3C-4F35-B037-CA6A6641A125}
+		{9BA332BD-210A-413F-85F7-CD9344603B67} = {41DB0B63-BDF6-48C9-990E-5F0F1EDA10A0}
+	EndGlobalSection
+EndGlobal

@@ -1,0 +1,26 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <UseWindowsForms>true</UseWindowsForms>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <AssemblyName>Fortnite Match Compiler</AssemblyName>
+    <RootNamespace>FortniteMatchCompiler</RootNamespace>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <ApplicationIcon>Assets\app-icon.ico</ApplicationIcon>
+    <ApplicationHighDpiMode>PerMonitorV2</ApplicationHighDpiMode>
+    <Version>1.0.0</Version>
+    <AssemblyTitle>Fortnite Match Compiler</AssemblyTitle>
+    <Product>Fortnite Match Compiler</Product>
+    <Description>Turn NVIDIA Fortnite highlights into compact match compilations.</Description>
+    <Authors>MrCreeper8</Authors>
+    <RepositoryUrl>https://github.com/MrCreeper8/fortnite-match-compiler</RepositoryUrl>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="FortniteMatchCompiler.Tests" />
+  </ItemGroup>
+
+</Project>

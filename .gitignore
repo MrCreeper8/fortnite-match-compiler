@@ -1,0 +1,64 @@
+# Build output
+**/bin/
+**/obj/
+artifacts/
+publish/
+releases/
+
+# Test output
+TestResults/
+coverage/
+*.coverage
+*.coveragexml
+*.trx
+
+# IDE and user state
+.vs/
+.vscode/
+.idea/
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+_ReSharper*/
+*.DotSettings.user
+
+# Local SDKs and package caches
+.dotnet/
+.dotnet-home/
+.dotnet-sdk/
+.nuget/
+
+# Application runtime data
+local/
+private/
+**/compiler.log
+**/history.json
+**/settings.json
+*.tmp
+*.partial-*.mp4
+*.log
+*.log.mbtree
+
+# Private recordings and generated media
+*.mp4
+*.mkv
+*.mov
+*.avi
+*.webm
+*.jpg
+*.jpeg
+*.png
+!src/FortniteMatchCompiler/Assets/app-icon.png
+!docs/images/*.png
+
+# Published binaries and archives
+*.exe
+*.pdb
+*.zip
+*.7z
+
+# Operating-system files
+.DS_Store
+Thumbs.db
+Desktop.ini

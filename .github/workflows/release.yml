@@ -1,0 +1,133 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - v*
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  release:
+    name: Build Windows release
+    runs-on: windows-latest
+    timeout-minutes: 30
+    env:
+      DOTNET_CLI_TELEMETRY_OPTOUT: 1
+      DOTNET_NOLOGO: true
+
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - name: Set up .NET
+        uses: actions/setup-dotnet@v6
+        with:
+          dotnet-version: 8.0.x
+
+      - name: Install FFmpeg
+        run: choco install ffmpeg --yes --no-progress
+
+      - name: Read version from tag
+        shell: pwsh
+        run: |
+          $version = $env:GITHUB_REF_NAME.TrimStart('v')
+          if ($version -notmatch '^\d+\.\d+\.\d+([+-][0-9A-Za-z.-]+)?$') {
+            throw "Release tags must look like v1.2.3 or v1.2.3-beta.1."
+          }
+          "VERSION=$version" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+
+      - name: Restore
+        run: dotnet restore FortniteMatchCompiler.sln
+
+      - name: Build
+        run: dotnet build FortniteMatchCompiler.sln --configuration Release --no-restore --property:ContinuousIntegrationBuild=true
+
+      - name: Test
+        run: dotnet run --project tests/FortniteMatchCompiler.Tests/FortniteMatchCompiler.Tests.csproj --configuration Release --no-build -- --ffmpeg-integration
+
+      - name: Publish single-file application
+        shell: pwsh
+        run: |
+          dotnet publish src/FortniteMatchCompiler/FortniteMatchCompiler.csproj `
+            --configuration Release `
+            --runtime win-x64 `
+            --self-contained true `
+            --output artifacts/publish `
+            --property:PublishSingleFile=true `
+            --property:IncludeNativeLibrariesForSelfExtract=true `
+            --property:DebugType=None `
+            --property:DebugSymbols=false `
+            --property:ContinuousIntegrationBuild=true `
+            --property:Version=$env:VERSION
+
+      - name: Package release
+        shell: pwsh
+        run: |
+          $executable = Join-Path 'artifacts/publish' 'Fortnite Match Compiler.exe'
+          if (-not (Test-Path -LiteralPath $executable)) {
+            throw "Published executable was not found at $executable."
+          }
+
+          $packageDirectory = Join-Path $env:RUNNER_TEMP 'Fortnite Match Compiler'
+          New-Item -ItemType Directory -Path $packageDirectory -Force | Out-Null
+          Copy-Item -LiteralPath $executable -Destination $packageDirectory
+          $packagingFiles = @(
+            'Compile Latest Match.cmd',
+            'Install.cmd',
+            'Install.ps1',
+            'Uninstall.cmd',
+            'Uninstall.ps1'
+          )
+          foreach ($packagingFile in $packagingFiles) {
+            Copy-Item -LiteralPath (Join-Path 'packaging/windows' $packagingFile) -Destination $packageDirectory
+          }
+          Copy-Item -LiteralPath 'README.md' -Destination $packageDirectory
+          Copy-Item -LiteralPath 'LICENSE' -Destination $packageDirectory
+
+          New-Item -ItemType Directory -Path 'artifacts' -Force | Out-Null
+          $archive = Join-Path 'artifacts' "Fortnite-Match-Compiler-$env:VERSION-win-x64.zip"
+          Compress-Archive -Path (Join-Path $packageDirectory '*') -DestinationPath $archive -CompressionLevel Optimal
+
+          $hash = (Get-FileHash -LiteralPath $archive -Algorithm SHA256).Hash.ToLowerInvariant()
+          $checksum = "$archive.sha256"
+          "$hash  $(Split-Path $archive -Leaf)" | Set-Content -LiteralPath $checksum -Encoding ascii
+
+      - name: Upload workflow artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: Fortnite-Match-Compiler-${{ env.VERSION }}-win-x64
+          path: |
+            artifacts/*.zip
+            artifacts/*.sha256
+          if-no-files-found: error
+          retention-days: 14
+
+      - name: Create GitHub release
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          $archive = Get-ChildItem -LiteralPath 'artifacts' -Filter '*.zip' | Select-Object -First 1
+          $checksum = Get-ChildItem -LiteralPath 'artifacts' -Filter '*.sha256' | Select-Object -First 1
+          if ($null -eq $archive -or $null -eq $checksum) {
+            throw 'Release archive or checksum is missing.'
+          }
+
+          gh release view $env:GITHUB_REF_NAME --json tagName *> $null
+          if ($LASTEXITCODE -eq 0) {
+            gh release upload $env:GITHUB_REF_NAME $archive.FullName $checksum.FullName --clobber
+          }
+          else {
+            gh release create $env:GITHUB_REF_NAME $archive.FullName $checksum.FullName `
+              --verify-tag `
+              --title "Fortnite Match Compiler $env:VERSION" `
+              --generate-notes
+          }
